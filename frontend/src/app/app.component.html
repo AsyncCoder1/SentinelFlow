@@ -1,0 +1,62 @@
+<main class="shell">
+  <header class="topbar">
+    <div class="brand-lockup">
+      <span class="brand-mark">SF</span>
+      <div>
+        <p class="eyebrow">NETWORK INTELLIGENCE / LIVE</p>
+        <h1>SentinelFlow</h1>
+      </div>
+    </div>
+    <div class="poll-state"><span class="pulse"></span> Auto-refreshing · 2 sec</div>
+  </header>
+
+  <section class="intro">
+    <div>
+      <p class="eyebrow">REAL-TIME SECURITY MONITOR</p>
+      <h2>Know what is moving<br><em>before it becomes noise.</em></h2>
+    </div>
+    <p class="intro-note">Continuous packet capture<br>with windowed ML analysis</p>
+  </section>
+
+  <section class="status-banner" [class]="statusClass">
+    <div class="status-symbol">{{ detection?.status === 'ANOMALY' ? '!' : detection?.status === 'NORMAL' ? '✓' : '·' }}</div>
+    <div class="status-copy">
+      <span class="eyebrow">CURRENT TRAFFIC STATE</span>
+      <strong>{{ detection?.status ?? 'NO TRAFFIC' }}</strong>
+      <span class="status-detail" *ngIf="detection?.status === 'ANOMALY'">Anomalous traffic pattern detected</span>
+      <span class="status-detail" *ngIf="detection?.status === 'NORMAL'">Traffic is within the learned normal profile</span>
+      <span class="status-detail" *ngIf="detection?.status === 'NO TRAFFIC'">The monitor is active and waiting for packets</span>
+    </div>
+    <div class="status-time">
+      <span>LAST WINDOW</span>
+      <b>{{ detection?.timestamp ?? '--' }}</b>
+    </div>
+  </section>
+
+  <p class="error" *ngIf="error">{{ error }} · Check that the API container is running.</p>
+
+  <section class="info-grid">
+    <article class="panel topology-panel">
+      <div class="panel-heading"><span class="section-number">01</span><h3>Traffic topology</h3></div>
+      <div class="route"><div class="node"><span class="node-dot client"></span><span>CLIENT</span><b>{{ lastTraffic?.client_ips?.join(', ') || 'Waiting for client' }}</b></div><span class="route-line">→</span><div class="node"><span class="node-dot server"></span><span>SERVER</span><b>{{ lastTraffic?.server_ip || '172.20.0.3' }}</b></div></div>
+      <div class="meta-list"><div><span>Capture interface</span><b>{{ lastTraffic?.interface || 'br-bff3fb989aae' }}</b></div><div><span>Analysis window</span><b>2 seconds</b></div><div><span>Model</span><b>joblib / 2-class</b></div></div>
+    </article>
+
+    <article class="panel confidence-panel">
+      <div class="panel-heading"><span class="section-number">02</span><h3>Model confidence</h3></div>
+      <div class="confidence-row"><div><span>NORMAL</span><strong class="normal-text">{{ percent(lastTraffic?.normal_probability) }}</strong></div><div><span>ANOMALY</span><strong class="anomaly-text">{{ percent(lastTraffic?.anomaly_probability) }}</strong></div></div>
+      <div class="confidence-bar"><span class="normal-bar" [style.width.%]="(lastTraffic?.normal_probability ?? 0) * 100"></span><span class="anomaly-bar" [style.width.%]="(lastTraffic?.anomaly_probability ?? 0) * 100"></span></div>
+      <p class="model-note">Prediction: <b>{{ lastTraffic?.prediction === null || lastTraffic?.prediction === undefined ? '--' : lastTraffic?.prediction }}</b><span> 0 normal · 1 anomaly</span></p>
+    </article>
+  </section>
+
+  <section class="panel features-panel">
+    <div class="panel-heading feature-heading"><div><span class="section-number">03</span><h3>Prediction input vector</h3></div><span class="feature-caption">The exact eight features sent to the model</span></div>
+    <div class="feature-grid" *ngIf="lastTraffic?.features as features">
+      <div class="feature" *ngFor="let row of featureRows"><span>{{ row.label }}</span><strong>{{ formatValue(features[row.key]) }}</strong><small>{{ row.unit }}</small></div>
+    </div>
+    <div class="empty-state" *ngIf="!lastTraffic?.features"><span class="empty-orbit">·</span><div><strong>NO TRAFFIC IN CURRENT WINDOW</strong><p>Feature values will appear automatically when packets arrive.</p></div></div>
+  </section>
+
+  <footer><span>SentinelFlow v2.0</span><span>Capture active · ML classification online</span></footer>
+</main>
