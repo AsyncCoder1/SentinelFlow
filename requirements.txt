@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+anyio
+h11
+scapy
+joblib
+pandas
+scikit-learn
